@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fit it AI - Virtual Fitting Room</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fit it AI</h1>
+            <p>See how clothes fit on YOUR body</p>
+        </header>
+
+        <div class="upload-section">
+            <h2>Step 1: Upload Your Photo</h2>
+            <input type="file" id="userPhoto" accept="image/*" class="file-input">
+            <button onclick="processPhoto()" class="cta-button">Analyze My Body</button>
+        </div>
+
+        <div class="results-section" id="results" style="display: none;">
+            <h2>Your Body Analysis</h2>
+            <div class="measurements">
+                <div class="measurement-card">
+                    <h3>Shoulder Width</h3>
+                    <span id="shoulderWidth">0</span> units
+                </div>
+                <div class="measurement-card">
+                    <h3>Torso Length</h3>
+                    <span id="torsoLength">0</span> units
+                </div>
+                <div class="measurement-card">
+                    <h3>Fit Score</h3>
+                    <span id="fitScore">0</span>/100
+                </div>
+            </div>
+            
+            <div class="garment-selection">
+                <h3>Try On Demo Items</h3>
+                <div class="garments">
+                    <div class="garment" onclick="tryOnGarment('tshirt')">
+                        <span>👕 T-Shirt</span>
+                    </div>
+                    <div class="garment" onclick="tryOnGarment('dress')">
+                        <span>👗 Dress</span>
+                    </div>
+                    <div class="garment" onclick="tryOnGarment('jacket')">
+                        <span>🧥 Jacket</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section" id="preview" style="display: none;">
+            <h2>How It Looks On You</h2>
+            <div id="garmentPreview"></div>
+            <button onclick="resetApp()" class="secondary-button">Try Another Item</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    
+    <script src="bodyMeasurement.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
