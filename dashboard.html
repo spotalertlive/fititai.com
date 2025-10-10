@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpotAlert Dashboard</title>
+  <style>
+    body {
+      margin:0;
+      font-family:"Poppins",sans-serif;
+      background:linear-gradient(180deg,#eef7ff 0%,#ffffff 100%);
+      color:#003366;
+    }
+    header {
+      position:fixed;
+      top:0;left:0;width:100%;
+      background:rgba(255,255,255,.5);
+      backdrop-filter:blur(10px);
+      box-shadow:0 4px 10px rgba(0,0,0,.1);
+      padding:14px 20px;
+      text-align:center;
+      z-index:10;
+    }
+    main {
+      margin-top:100px;
+      text-align:center;
+    }
+    .upload-box {
+      border:2px dashed #0078ff;
+      padding:40px;
+      border-radius:12px;
+      width:90%;
+      max-width:400px;
+      margin:0 auto 30px;
+      background:rgba(255,255,255,.3);
+      backdrop-filter:blur(8px);
+    }
+    input[type="file"] {
+      margin-top:10px;
+    }
+    button {
+      background:linear-gradient(90deg,#0078ff,#00bfff);
+      border:none;
+      color:#fff;
+      padding:10px 20px;
+      border-radius:50px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.3s;
+    }
+    button:hover {
+      background:linear-gradient(90deg,#005fcc,#0099ff);
+      transform:scale(1.05);
+    }
+    #result {
+      margin-top:25px;
+      font-size:1rem;
+    }
+
+    /* Floating Shira Assistant */
+    #shira-bubble{
+      position:fixed;bottom:24px;right:24px;width:68px;height:68px;border-radius:50%;
+      background:radial-gradient(circle at 30% 30%,#00a2ff,#0057e7);
+      box-shadow:0 0 25px rgba(0,136,255,.45);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;z-index:10000;transition:transform .25s,box-shadow .25s;
+    }
+    #shira-bubble:hover{transform:scale(1.08);box-shadow:0 0 34px rgba(255,221,0,.75);}
+    .shira-icon{width:40px;height:40px;filter:drop-shadow(0 0 8px rgba(255,255,255,.7));}
+    #shira-chatbox{
+      position:fixed;bottom:100px;right:24px;width:360px;height:520px;display:none;z-index:10001;
+      background:rgba(255,255,255,.96);border-radius:16px;overflow:hidden;
+      box-shadow:0 12px 40px rgba(0,0,0,.15),0 0 30px rgba(0,136,255,.35);
+    }
+    #shira-chatbox iframe{width:100%;height:100%;border:none;}
+    @media(max-width:480px){
+      #shira-chatbox{width:95vw;right:2.5vw;height:70vh;bottom:90px;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📹 SpotAlert Dashboard</h1>
+  </header>
+
+  <main>
+    <h2>Upload Image to Detect Faces</h2>
+    <div class="upload-box">
+      <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required /><br><br>
+        <button type="submit">Upload & Detect</button>
+      </form>
+    </div>
+    <div id="result"></div>
+  </main>
+
+  <!-- Floating Shira -->
+  <div id="shira-bubble"><img src="/assets/shira-icon.png" alt="Shira" class="shira-icon"></div>
+  <div id="shira-chatbox"><iframe src="https://aishira.live/embed?assistant=spotalert&mode=text"></iframe></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const result = document.getElementById('result');
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const file = form.file.files[0];
+      if(!file) return alert('Please select an image first.');
+      result.innerHTML = '⏳ Uploading...';
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/upload', {method:'POST', body:fd});
+      const data = await res.json();
+      result.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    });
+
+    // Floating Shira toggle
+    const bubble = document.getElementById("shira-bubble");
+    const chatbox = document.getElementById("shira-chatbox");
+    bubble.addEventListener("click", () => {
+      chatbox.style.display = chatbox.style.display === "block" ? "none" : "block";
+    });
+  </script>
+</body>
+</html>
