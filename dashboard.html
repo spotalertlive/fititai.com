@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpotAlert | Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- ===== HEADER ===== -->
+  <header class="frosted-header">
+    <img src="spotalert_logo.png" alt="SpotAlert Logo" class="logo" />
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="plans.html">Plans</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ===== DASHBOARD MAIN ===== -->
+  <main class="dashboard-container">
+    <h2>📹 Live Security Dashboard</h2>
+    <p id="currentPlan">Free Trial – 2 Cameras, Email Alerts Only</p>
+
+    <!-- Upload Known Faces -->
+    <section class="upload-section">
+      <h3>Upload Known Face</h3>
+      <form id="faceUploadForm">
+        <input type="file" id="faceImage" accept="image/*" required />
+        <input type="text" id="faceLabel" placeholder="Label this face (e.g. John)" required />
+        <button type="submit">Upload</button>
+      </form>
+    </section>
+
+    <!-- Known Faces Gallery -->
+    <section class="faces-gallery">
+      <h3>Known Faces</h3>
+      <div id="faceList"></div>
+    </section>
+
+    <!-- Alert Gallery -->
+    <section class="alert-gallery">
+      <h3>Recent Alerts</h3>
+      <ul id="alertList"></ul>
+    </section>
+
+    <!-- Camera Upload (Trigger AWS Detection) -->
+    <section class="camera-upload">
+      <h3>Manual Snapshot Upload</h3>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" id="cameraFile" accept="image/*" required />
+        <button type="submit">Send to AI Detection</button>
+      </form>
+      <div id="result"></div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button id="upgradeBtn">Upgrade Plan</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </main>
+
+  <!-- ===== FLOATING SHIRA ===== -->
+  <div id="shira-assistant">💬</div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
