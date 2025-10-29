@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpotAlert Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ===== ELITE MODULE STYLES ===== */
+    .elite-section {
+      margin-top: 40px;
+      background: #ffffffcc;
+      border-radius: 14px;
+      padding: 25px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .elite-section h3 {
+      margin-bottom: 12px;
+      color: #003366;
+    }
+    .replay-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .replay-stage {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0b1f33;
+      border-radius: 10px;
+      height: 360px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+    #replayFrame {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    #replaySlider {
+      width: 100%;
+    }
+    .replay-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: #334;
+    }
+    .download-btn {
+      background: #0078ff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
+      margin-top: 10px;
+    }
+    .download-btn:hover {
+      background: #005fcc;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="frosted-header">
+    <img src="spotalert_logo.png" class="logo" alt="SpotAlert Logo" />
+    <nav>
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="#alerts">Alerts</a>
+    </nav>
+  </header>
+
+  <div class="dashboard-container">
+    <h2>📷 SpotAlert CCTV Dashboard</h2>
+    <div id="currentPlan">Current Plan: <strong>Free Trial (14 Days)</strong></div>
+
+    <form id="faceUploadForm" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" required />
+      <button type="submit">Upload & Analyze</button>
+    </form>
+
+    <div class="alert-panel">
+      <h3>Recent Alerts</h3>
+      <ul id="alertList"></ul>
+    </div>
+
+    <div class="action-buttons">
+      <button id="upgradeBtn">Upgrade Plan</button>
+      <button id="logoutBtn" onclick="window.location='/'">Logout</button>
+    </div>
+
+    <!-- ===== ELITE SECTION: Incident Tracker & Replay Timeline ===== -->
+    <section class="elite-section">
+      <h3>🎞 Incident Replay Timeline (Elite Only)</h3>
+
+      <div class="replay-controls">
+        <label>Window:
+          <select id="replayWindow">
+            <option value="5">Last 5 min</option>
+            <option value="10" selected>Last 10 min</option>
+            <option value="30">Last 30 min</option>
+            <option value="60">Last 60 min</option>
+          </select>
+        </label>
+
+        <button id="replayLoad">Load</button>
+        <button id="replayPlay">Play</button>
+        <button id="replayPause" disabled>Pause</button>
+
+        <label>Speed:
+          <select id="replaySpeed">
+            <option value="1">1x</option>
+            <option value="2" selected>2x</option>
+            <option value="4">4x</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="replay-stage">
+        <img id="replayFrame" alt="Replay frame" />
+      </div>
+
+      <input id="replaySlider" type="range" min="0" max="0" value="0" />
+
+      <div class="replay-meta">
+        <span id="replayIndex">0 / 0</span>
+        <span id="replayTs">—</span>
+      </div>
+
+      <button class="download-btn" id="downloadIncidentPDF">📄 Download Incident Report (PDF)</button>
+    </section>
+  </div>
+
+  <div id="shira-assistant" title="Chat with Shira">💬</div>
+
+  <script>
+    // === ✅ Base URL for Backend ===
+    const API_BASE = "http://100.25.104.193:3000";
+
+    // ===== MAIN ALERT UPLOAD =====
+    const form = document.getElementById("faceUploadForm");
+    const list = document.getElementById("alertList");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const res = await fetch(`${API_BASE}/trigger-alert`, { method: "POST", body: data });
+      const json = await res.json();
+
+      const li = document.createElement("li");
+      li.textContent = json.faces?.length
+        ? `✅ Known face detected (${json.faces.length})`
+        : "🚨 Unknown face detected — alert sent!";
+      list.prepend(li);
+    });
+
+    // ===== SHIRA CHAT ASSISTANT =====
+    const shira = document.getElementById("shira-assistant");
+    shira.addEventListener("click", async () => {
+      const msg = prompt("Ask Shira about SpotAlert:");
+      if (!msg) return;
+      const res = await fetch(`${API_BASE}/shira`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+      const data = await res.json();
+      alert(data.reply);
+    });
+
+    // ===== ELITE REPLAY MODULE =====
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const replayWindow = $("replayWindow");
+      const replayLoad = $("replayLoad");
+      const replayPlay = $("replayPlay");
+      const replayPause = $("replayPause");
+      const replaySpeed = $("replaySpeed");
+      const replayFrame = $("replayFrame");
+      const replaySlider = $("replaySlider");
+      const replayIndex = $("replayIndex");
+      const replayTs = $("replayTs");
+      const downloadBtn = $("downloadIncidentPDF");
+
+      let frames = [];
+      let idx = 0;
+      let timer = null;
+
+      async function presign(key) {
+        const r = await fetch(`${API_BASE}/api/elite/frame-url?key=${encodeURIComponent(key)}`);
+        const j = await r.json();
+        return j.url;
+      }
+
+      function updateUI() {
+        replaySlider.max = Math.max(0, frames.length - 1);
+        replaySlider.value = idx;
+        replayIndex.textContent = `${frames.length ? (idx + 1) : 0} / ${frames.length}`;
+        replayTs.textContent = frames[idx]?.ts || "—";
+      }
+
+      async function showIndex(i) {
+        if (!frames.length) return;
+        idx = Math.max(0, Math.min(i, frames.length - 1));
+        const url = await presign(frames[idx].key);
+        replayFrame.src = url;
+        updateUI();
+      }
+
+      async function loadFrames() {
+        stop();
+        replayFrame.src = "";
+        idx = 0;
+        const mins = replayWindow.value;
+        const r = await fetch(`${API_BASE}/api/elite/replay?minutes=${mins}`);
+        const j = await r.json();
+        frames = j.frames || [];
+        await showIndex(0);
+      }
+
+      function play() {
+        if (!frames.length || timer) return;
+        replayPlay.disabled = true;
+        replayPause.disabled = false;
+        const base = 800;
+        const speed = Number(replaySpeed.value) || 1;
+        timer = setInterval(async () => {
+          if (idx >= frames.length - 1) {
+            stop();
+            return;
+          }
+          await showIndex(idx + 1);
+        }, base / speed);
+      }
+
+      function stop() {
+        if (timer) clearInterval(timer);
+        timer = null;
+        replayPlay.disabled = false;
+        replayPause.disabled = true;
+      }
+
+      replayLoad.addEventListener("click", loadFrames);
+      replayPlay.addEventListener("click", play);
+      replayPause.addEventListener("click", stop);
+      replaySpeed.addEventListener("change", () => { if (timer) { stop(); play(); }});
+      replaySlider.addEventListener("input", async (e) => { stop(); await showIndex(Number(e.target.value)); });
+
+      // PDF download (calls backend generator)
+      downloadBtn.addEventListener("click", async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/elite/incident-pdf`);
+          if (!res.ok) throw new Error("Failed");
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "SpotAlert_Incident_Report.pdf";
+          a.click();
+        } catch {
+          alert("⚠️ Could not generate incident report right now.");
+        }
+      });
+
+      // auto-load 10min by default
+      loadFrames().catch(console.error);
+    })();
+  </script>
+</body>
+</html>
